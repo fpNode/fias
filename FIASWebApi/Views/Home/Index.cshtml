@@ -1,0 +1,57 @@
+﻿@{
+    ViewBag.Title = "Home";
+}
+
+<div class="jumbotron">
+    <h1>Сервис для поиска адреса в ФИАС</h1>
+    <p class="lead">FIAS Service это сервис для поиска адресов объектов в базе Федеральной информационной адресной системе</p>
+    <p><a href="http://fias.nalog.ru/" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>
+</div>
+
+<div class="row">
+    <div class="col-md-3">
+        <div class="input-group">
+            <input id="fias-search" type="text" class="form-control" style="max-width: 100%;" name="pattern" placeholder="Enter name" value="@Model">
+            <span class="input-group-btn">
+                <button class="btn btn-default" type="button" onclick="doSearch()"><span class="glyphicon glyphicon-search"></span></button>
+            </span>
+        </div><!-- /input-group -->
+    </div>
+</div>
+
+<br>
+
+<div class="row">
+    <ul id="fias-result" class="list-group">
+        @*<li class="list-group-item">@id</li>*@
+    </ul>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script>
+        var delay = (function () {
+            var timer = 0;
+            return function (callback, ms) {
+                clearTimeout(timer);
+                timer = setTimeout(callback, ms);
+            };
+        })();
+
+        function doSearch() {
+            var query = $('#fias-search').val();
+            if (query.length > 3) {
+                $('#fias-result li').remove()
+                $.get("http://fias.fpnode.com/api/FIAS", { query: query })
+                  .done(function (data) {
+                      data.forEach(function (item, i, arr) {
+                          $('#fias-result').append($("<li class='list-group-item'>" + item.FullName + "</li>"));
+                      });
+                  });
+            }
+        }
+
+        $("#fias-search").keyup(function () { delay(doSearch, 1000); });
+    </script>
+}
