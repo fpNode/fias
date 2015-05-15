@@ -56,6 +56,7 @@ namespace fpNode.FIAS
         public string FIASCODE { get; set; }
         public string FORMALNAME { get; set; }
         public string OFFNAME { get; set; }
+        public string SHORTNAME { get; set; }
         public int POSTALCODE { get; set; }
         public ulong OKATO { get; set; }
         public ulong OKTMO { get; set; }
@@ -93,6 +94,7 @@ namespace fpNode.FIAS
                 nr.NEXTID     = reader.SafeGetGuid("NEXTID");
                 nr.FORMALNAME = reader.SafeGetString("FORMALNAME");
                 nr.OFFNAME    = reader.SafeGetString("OFFNAME");
+                nr.SHORTNAME = reader.SafeGetString("SHORTNAME");
                 nr.FIASCODE   = reader.SafeGetString("FIASCODE");
                 nr.POSTALCODE = reader.SafeGetInt("POSTALCODE");
                 nr.OKATO      = reader.SafeGetUlong("OKATO");
@@ -116,6 +118,7 @@ namespace fpNode.FIAS
             public string FIASCODE { get; set; }
             public string FORMALNAME { get; set; }
             public string OFFNAME { get; set; }
+            public string SHORTNAME { get; set; }
             public int POSTALCODE { get; set; }
             public ulong OKATO { get; set; }
             public ulong OKTMO { get; set; }
@@ -131,6 +134,7 @@ namespace fpNode.FIAS
             node.FORMALNAME = r.FORMALNAME;
             node.FIASCODE = r.FIASCODE;
             node.OFFNAME = r.OFFNAME;
+            node.SHORTNAME = r.SHORTNAME;
             node.POSTALCODE = r.POSTALCODE;
             node.OKATO = r.OKATO;
             node.OKTMO = r.OKTMO;
