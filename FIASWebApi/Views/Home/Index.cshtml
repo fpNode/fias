@@ -43,7 +43,7 @@
             var query = $('#fias-search').val();
             if (query.length > 3) {
                 $('#fias-result li').remove()
-                $.get("http://fias.fpnode.com/api/FIAS", { query: query })
+                $.get("/api/FIAS", { query: query })
                   .done(function (data) {
                       data.forEach(function (item, i, arr) {
                           $('#fias-result').append($("<li class='list-group-item'>" + item.FullName + "</li>"));

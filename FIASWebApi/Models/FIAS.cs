@@ -80,7 +80,7 @@ namespace fpNode.FIAS
         {
             public static string CommandText
             {
-                get { return string.Format("select [AOID], [AOGUID], [PARENTGUID], [FORMALNAME], [OFFNAME], [SHORTNAME], [PREVID], [NEXTID], [REGIONCODE] + [AUTOCODE] + [AREACODE] + [CITYCODE] + [CTARCODE] + [PLACECODE] + [STREETCODE] + [EXTRCODE] + [SEXTCODE] as FIASCODE, [POSTALCODE], [OKATO], [OKTMO], [SHORTNAME], [AOLEVEL], [PLAINCODE] from  [dbo].[ADDROBJ] where LIVESTATUS = '1'"); }
+                get { return string.Format("select [AOID], [AOGUID], [PARENTGUID], [FORMALNAME], [OFFNAME], [SHORTNAME], [PREVID], [NEXTID], [REGIONCODE] + [AUTOCODE] + [AREACODE] + [CITYCODE] + [CTARCODE] + [PLACECODE] + [STREETCODE] + [EXTRCODE] + [SEXTCODE] as FIASCODE, [POSTALCODE], [OKATO], [OKTMO], [SHORTNAME], [AOLEVEL], [PLAINCODE], [STARTDATE] from  [dbo].[ADDROBJ] where LIVESTATUS = '1'"); }
             }
 
             public static NodeRecord Read(SqlDataReader reader)
@@ -101,6 +101,7 @@ namespace fpNode.FIAS
                 nr.OKTMO      = reader.SafeGetUlong("OKTMO");
                 nr.AOLEVEL    = reader.SafeGetInt("AOLEVEL");
                 nr.KLADRCODE  = reader.SafeGetString("PLAINCODE").PadRight(20, '0');
+                nr.STARTDATE  = reader.GetDateTime(reader.GetOrdinal("STARTDATE"));
 
                 if (nr.FORMALNAME == nr.OFFNAME)
                 {
@@ -124,6 +125,7 @@ namespace fpNode.FIAS
             public ulong OKTMO { get; set; }
             public int AOLEVEL { get; set; }
             public string KLADRCODE { get; set; }
+            public DateTime STARTDATE { get; set; }
         }
 
         static Node Create(NodeRecord r)
@@ -154,7 +156,6 @@ namespace fpNode.FIAS
         public static void LoadData(string sqlConnStr)
         {
             var records = new Dictionary<Guid, List<NodeRecord>>();
-            var q = new Queue<NodeRecord>();
 
             using (SqlConnection conn = new SqlConnection(sqlConnStr))
             {
@@ -181,12 +182,20 @@ namespace fpNode.FIAS
                 conn.Close();
             }
 
+            var q = new Queue<NodeRecord>();
+
             foreach (var r in records)
             {
                 if (r.Value.Count > 1)
                 {
                     var prev = r.Value.Where(nr => nr.PREVID != Guid.Empty).Select(pr => pr.PREVID);
                     var lst = r.Value.Where(nr => !prev.Contains(nr.AOID) && nr.PREVID != Guid.Empty).ToList();
+
+                    if (lst.Count > 1)
+                    {
+                        var lastDate = lst.Max(nr => nr.STARTDATE);
+                        lst = lst.Where(nr => nr.STARTDATE == lastDate).ToList();
+                    }
 
                     if (lst.Count > 1)
                     {
@@ -205,28 +214,38 @@ namespace fpNode.FIAS
                 }
             }
 
-            while (q.Count > 0)
-            {
-                var nr = q.Dequeue();
-                if (nr.PARENTGUID == Guid.Empty || Node.Nodes.ContainsKey(nr.PARENTGUID))
-                {
-                    Node n = Node.Create(nr);
+            var qq = new Queue<NodeRecord>();
+            int pc = 0;
 
-                    var cn = n;
-                    do
-                    {
-                        foreach (var s in ParceTags(cn.FORMALNAME.ToUpper()))
-                        {
-                            NodeMap.Add(s, n);
-                        }
-                        cn = cn.Parent;
-                    } while (cn != null);
-                }
-                else
+            do
+            {
+                pc = 0;
+                while (q.Count > 0)
                 {
-                    q.Enqueue(nr);
+                    var nr = q.Dequeue();
+                    if (nr.PARENTGUID == Guid.Empty || Node.Nodes.ContainsKey(nr.PARENTGUID))
+                    {
+                        Node n = Node.Create(nr);
+
+                        var cn = n;
+                        do
+                        {
+                            foreach (var s in ParceTags(cn.FORMALNAME.ToUpper()))
+                            {
+                                NodeMap.Add(s, n);
+                            }
+                            cn = cn.Parent;
+                        } while (cn != null);
+                        ++pc;
+                    }
+                    else
+                    {
+                        qq.Enqueue(nr);
+                    }
                 }
-            }
+                q = qq;
+                qq = new Queue<NodeRecord>();
+            } while (pc > 0);
         }
 
         public static IEnumerable<Node> FindNodes(string query)
