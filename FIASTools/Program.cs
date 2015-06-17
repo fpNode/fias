@@ -13,6 +13,7 @@ using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Serialization;
 using System.Linq;
+using System.ServiceModel;
 
 namespace fpNode.FIAS.Tools
 {
@@ -96,7 +97,12 @@ namespace fpNode.FIAS.Tools
         {
             Console.WriteLine("check update ...");
 
-            var c = new FIASService.DownloadServiceSoapClient();
+            var binding = new BasicHttpBinding();
+            binding.MaxReceivedMessageSize = Int32.MaxValue; 
+
+            var addr = new EndpointAddress("http://fias.nalog.ru/WebServices/Public/DownloadService.asmx");
+
+            var c = new FIASService.DownloadServiceSoapClient(binding, addr);
             IEnumerable<FIASService.DownloadFileInfo> infos = (IEnumerable<FIASService.DownloadFileInfo>)c.GetAllDownloadFileInfo();
 
             int lastDelta = FindLastDelta();
