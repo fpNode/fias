@@ -80,7 +80,7 @@ namespace fpNode.FIAS
         {
             public static string CommandText
             {
-                get { return string.Format("select [AOID], [AOGUID], [PARENTGUID], [FORMALNAME], [OFFNAME], [SHORTNAME], [PREVID], [NEXTID], [REGIONCODE] + [AUTOCODE] + [AREACODE] + [CITYCODE] + [CTARCODE] + [PLACECODE] + [STREETCODE] + [EXTRCODE] + [SEXTCODE] as FIASCODE, [POSTALCODE], [OKATO], [OKTMO], [SHORTNAME], [AOLEVEL], [PLAINCODE], [STARTDATE] from  [dbo].[ADDROBJ] where LIVESTATUS = '1'"); }
+                get { return string.Format("select [AOID], [AOGUID], [PARENTGUID], [FORMALNAME], [OFFNAME], [SHORTNAME], [PREVID], [NEXTID], [REGIONCODE] + [AUTOCODE] + [AREACODE] + [CITYCODE] + [CTARCODE] + [PLACECODE] + [STREETCODE] + [EXTRCODE] + [SEXTCODE] as FIASCODE, [POSTALCODE], [OKATO], [OKTMO], [SHORTNAME], [AOLEVEL], [PLAINCODE], [STARTDATE], [STARTDATE], [UPDATEDATE] from  [dbo].[ADDROBJ] where LIVESTATUS = '1'"); }
             }
 
             public static NodeRecord Read(SqlDataReader reader)
@@ -102,6 +102,7 @@ namespace fpNode.FIAS
                 nr.AOLEVEL    = reader.SafeGetInt("AOLEVEL");
                 nr.KLADRCODE  = reader.SafeGetString("PLAINCODE").PadRight(20, '0');
                 nr.STARTDATE  = reader.GetDateTime(reader.GetOrdinal("STARTDATE"));
+                nr.UPDATEDATE = reader.GetDateTime(reader.GetOrdinal("UPDATEDATE"));
 
                 if (nr.FORMALNAME == nr.OFFNAME)
                 {
@@ -126,6 +127,7 @@ namespace fpNode.FIAS
             public int AOLEVEL { get; set; }
             public string KLADRCODE { get; set; }
             public DateTime STARTDATE { get; set; }
+            public DateTime UPDATEDATE { get; set; }
         }
 
         static Node Create(NodeRecord r)
@@ -195,6 +197,12 @@ namespace fpNode.FIAS
                     {
                         var lastDate = lst.Max(nr => nr.STARTDATE);
                         lst = lst.Where(nr => nr.STARTDATE == lastDate).ToList();
+                    }
+
+                    if (lst.Count > 1)
+                    {
+                        var updDate = lst.Max(nr => nr.UPDATEDATE);
+                        lst = lst.Where(nr => nr.UPDATEDATE == updDate).ToList();
                     }
 
                     if (lst.Count > 1)
