@@ -10,7 +10,8 @@ namespace FIASWebApi.Controllers
     {
         public ActionResult Index()
         {
-            return Redirect("http://fpnode.com/Page/farpoint-api");
+            //return Redirect("http://fpnode.com/Page/farpoint-api");
+            return View();
         }
     }
 }

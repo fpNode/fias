@@ -8,29 +8,59 @@
     <p><a href="http://fias.nalog.ru/" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>
 </div>
 
-<div class="row">
-    <div class="col-md-3">
-        <div class="input-group">
-            <input id="fias-search" type="text" class="form-control" style="max-width: 100%;" name="pattern" placeholder="Enter name" value="@Model">
-            <span class="input-group-btn">
-                <button class="btn btn-default" type="button" onclick="doSearch()"><span class="glyphicon glyphicon-search"></span></button>
-            </span>
-        </div><!-- /input-group -->
+<div id="viewModel">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="input-group">
+                <input id="fias-search" type="text" class="form-control" style="max-width: 100%;" name="pattern" placeholder="город улица">
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="button" data-bind="click: Search"><span class="glyphicon glyphicon-search"></span></button>
+                </span>
+            </div><!-- /input-group -->
+        </div>
     </div>
-</div>
 
-<br>
+    <br>
 
-<div class="row">
-    <ul id="fias-result" class="list-group">
-        @*<li class="list-group-item">@id</li>*@
-    </ul>
+    <div class="row" data-bind="if: status() == 'search'">
+        <div class="alert alert-info" role="alert">
+            <span>Поиск...</span>
+        </div>
+    </div>
+
+    <div class="list-group" data-bind="foreach: AddrObjects">
+        <a class="list-group-item" data-bind="text: FullName, click: $parent.SearchHouse"></a>
+    </div>
+
+    <div data-bind="if: CurrentAddr">
+        <button class="btn btn-lg" style="width:100%" data-bind="text: CurrentAddr().FullName, click: CurrentAddr().Select, css: { 'btn-success': CurrentAddr().Selected}">
+        </button>
+    </div>
+
+    <br />
+
+    <div class="btn-group" data-bind="foreach: HouseObjects">
+        <button type="button" style="width: 50px; margin-bottom: 10px" class="btn btn-default" data-bind="text: FullName(), click: Select, css: { 'btn-success': Selected }"></button>
+    </div>
+
+    <p data-bind="if: SelectedNode">
+        <button class="btn btn-primary" type="button" data-bind="click: Save">Готово</button>
+    </p>
 </div>
 
 @section Scripts {
     @Scripts.Render("~/bundles/jqueryval")
+    <script src="~/Scripts/knockout-3.3.0.js"></script>
+    <script src="~/Scripts/knockout.mapping-latest.js"></script>
 
     <script>
+        var apiUrl = "/FIAS";
+        var apiUrl2 = "/FIASHOUSE";
+    </script>
+
+    <script src="~/Scripts/fias.js"></script>
+
+    <script type="text/javascript">
         var delay = (function () {
             var timer = 0;
             return function (callback, ms) {
@@ -39,19 +69,6 @@
             };
         })();
 
-        function doSearch() {
-            var query = $('#fias-search').val();
-            if (query.length > 3) {
-                $('#fias-result li').remove()
-                $.get("/api/FIAS", { query: query })
-                  .done(function (data) {
-                      data.forEach(function (item, i, arr) {
-                          $('#fias-result').append($("<li class='list-group-item'>" + item.FullName + "</li>"));
-                      });
-                  });
-            }
-        }
-
-        $("#fias-search").keyup(function () { delay(doSearch, 1000); });
+        $("#fias-search").keyup(function () { delay(App.viewModel.Search, 1000); });
     </script>
 }

@@ -190,3 +190,4 @@ ModelManifest.xml
 
 #
 FIASWebApi/Web.Release.config
+/.vs/config/applicationhost.config

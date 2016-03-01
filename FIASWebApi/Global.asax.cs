@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FIASWeb;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
@@ -20,7 +21,8 @@ namespace FIASWebApi
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
 
-            fpNode.FIAS.Node.LoadData(ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString);
+            AddrNode.Load();
+            //(ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString);
             GC.Collect();
         }
     }
