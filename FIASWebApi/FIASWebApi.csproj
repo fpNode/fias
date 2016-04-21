@@ -159,6 +159,7 @@
     <Content Include="Scripts\bootstrap.min.js" />
     <None Include="Properties\PublishProfiles\host.pubxml" />
     <None Include="Properties\PublishProfiles\host_sql.pubxml" />
+    <None Include="Properties\PublishProfiles\local.pubxml" />
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
     <Content Include="Scripts\fias.js" />
     <Content Include="Scripts\jquery-1.10.2.js" />

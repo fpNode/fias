@@ -71,7 +71,7 @@ namespace FIASSplit
             if (!dataDir.Exists)
                 dataDir.Create();
 
-            
+
             var info = DownloadLastDelta();
 
             CleanDB();
@@ -80,7 +80,6 @@ namespace FIASSplit
             HouseXMLNode.Upload(new DirectoryInfo(Path.Combine(dataDir.FullName, info.VersionId.ToString())));
 
             AddIndex();
-
             BackupDB();
 
             //DownloadDeltas();
@@ -97,13 +96,14 @@ namespace FIASSplit
 
         static void BackupDB()
         {
+            var DBBackupFolder = new DirectoryInfo(ConfigurationManager.AppSettings["DBBackupFolder"]);
             //
             SqlConnection conn = null;
             conn = new SqlConnection(ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString);
             conn.Open();
             var cmd = conn.CreateCommand();
             cmd.CommandTimeout = 3000;
-            cmd.CommandText = string.Format("BACKUP DATABASE {0} TO DISK = '{1}' WITH FORMAT, COMPRESSION", conn.Database, Path.Combine(dataDir.FullName, "FIAS.bak"));
+            cmd.CommandText = string.Format("BACKUP DATABASE {0} TO DISK = '{1}' WITH FORMAT, COMPRESSION", conn.Database, Path.Combine(DBBackupFolder.FullName, "FIAS.bak"));
             cmd.ExecuteNonQuery();
             ConsoleHelper.WriteLine("BackupDB");
             conn.Close();
