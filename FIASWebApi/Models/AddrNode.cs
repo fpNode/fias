@@ -146,6 +146,7 @@ namespace FIASWeb
         public int AOLEVEL { get; set; }
         public string KLADRCODE { get; set; }
         public DateTime UPDATEDATE { get; set; }
+        public string OKTMOName { get; set; }
 
         public string FullName
         {
@@ -343,6 +344,15 @@ namespace FIASWeb
             }
 
             return names.Intersect(src).Count();
+        }
+
+        public void SetOKTMO()
+        {
+            OKTMOName = OKTMO.ToString();
+            if (null != Parent)
+            {
+                Parent.SetOKTMO();
+            }
         }
     }
 }
