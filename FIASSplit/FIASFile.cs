@@ -1,6 +1,7 @@
 ﻿using NUnrar.Archive;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -20,6 +21,10 @@ namespace FIASSplit
             else if (f.Name.StartsWith("AS_HOUSE_"))
             {
                 return "HOUSEGUID";
+            }
+            else if (f.Name.StartsWith("AS_ROOM_"))
+            {
+                return "ROOMGUID";
             }
             else if (f.Name.StartsWith("AS_HOUSEINT_"))
             {
@@ -42,6 +47,10 @@ namespace FIASSplit
             {
                 return "AS_HOUSE_";
             }
+            else if (f.Name.StartsWith("AS_ROOM_"))
+            {
+                return "AS_ROOM_";
+            }
             else if (f.Name.StartsWith("AS_HOUSEINT_"))
             {
                 return "AS_HOUSEINT_";
@@ -60,6 +69,10 @@ namespace FIASSplit
                 return true;
             }
             else if (f.Name.StartsWith("AS_HOUSE_"))
+            {
+                return true;
+            }
+            else if (f.Name.StartsWith("AS_ROOM_"))
             {
                 return true;
             }
@@ -93,6 +106,89 @@ namespace FIASSplit
             return null;
         }
 
+        public static IEnumerable<string> ExtractNodes(FileInfo file, string name)
+        {
+            var proc = new Process
+            {
+                StartInfo = new ProcessStartInfo(@"C:\Program Files\7-Zip\7z.exe", "e -trar \"" + file.FullName + "\" -so  " + name + "*.*")
+                {
+                    //startInfo.CreateNoWindow = false;
+                    UseShellExecute = false,
+                    WindowStyle = ProcessWindowStyle.Normal,
+                    RedirectStandardOutput = true
+                }
+            };
+
+            proc.Start();
+
+            if (!proc.StandardOutput.EndOfStream)
+            {
+                var reader = XmlReader.Create(proc.StandardOutput);
+                reader.MoveToContent();
+                reader.Read();
+
+                // loop through Object elements
+                while (reader.NodeType == XmlNodeType.Element)
+                {
+                    var data = reader.ReadOuterXml();
+                    yield return data;
+                }
+            }
+            yield break;
+        }
+
+        public static IEnumerable<Tuple<string, string>> ExtractNodes2(FileInfo file, string name)
+        {
+            var proc = new Process
+            {
+                StartInfo = new ProcessStartInfo(@"C:\Program Files\7-Zip\7z.exe", "e -trar \"" + file.FullName + "\" -so  " + name + "*.*")
+                {
+                    //startInfo.CreateNoWindow = false;
+                    UseShellExecute = false,
+                    WindowStyle = ProcessWindowStyle.Normal,
+                    RedirectStandardOutput = true
+                }
+            };
+
+            proc.Start();
+
+            if (!proc.StandardOutput.EndOfStream)
+            {
+                var reader = XmlReader.Create(proc.StandardOutput);
+                reader.MoveToContent();
+                reader.Read();
+
+                // loop through Object elements
+                while (reader.NodeType == XmlNodeType.Element)
+                {
+                    string id = "";
+                    string guid = "";
+                    int rc = 0;
+                    while (reader.MoveToNextAttribute())
+                    {
+                        switch(reader.Name)
+                        {
+                            case "ROOMID":
+                                id = reader.Value;
+                                ++rc;
+                                break;
+                            case "ROOMGUID":
+                                guid = reader.Value;
+                                ++rc;
+                                break;
+                        }
+                        if(rc == 2)
+                        {
+                            yield return Tuple.Create(guid, id);
+                            break;
+                        }
+                    }
+                    reader.MoveToContent();
+                }
+            }
+            yield break;
+        }
+
         public static DirectoryInfo ExtractFiles(DirectoryInfo dir)
         {
             var f = dir.GetFiles("*.rar").First();
@@ -104,19 +200,44 @@ namespace FIASSplit
 
             var outDir = new DirectoryInfo(Path.Combine(dir.FullName, "Src"));
 
-            if (!outDir.Exists)
+            //if (!outDir.Exists)
             {
                 outDir.Create();
 
                 ConsoleHelper.WriteLine(string.Format("start extract {0}", f.FullName));
-                RarArchive archive = RarArchive.Open(f.FullName);
-                foreach (RarArchiveEntry entry in archive.Entries)
+                //RarArchive archive = RarArchive.Open(f.FullName);
+                //foreach (RarArchiveEntry entry in archive.Entries)
+                //{
+                //    string path = Path.Combine(outDir.ToString(), Path.GetFileName(entry.FilePath));
+                //    entry.WriteToFile(path);
+                //}
+
+                using (StreamWriter file = new StreamWriter(dir.FullName + "\\e.bat"))
                 {
-                    string path = Path.Combine(outDir.ToString(), Path.GetFileName(entry.FilePath));
-                    entry.WriteToFile(path);
+                    file.WriteLine("\"C:\\Program Files\\7-Zip\\7z.exe\" e -trar \"" + f.FullName + "\" -o\"" + outDir.FullName + "\"");
                 }
+
+
+                // Use ProcessStartInfo class
+                ProcessStartInfo startInfo = new ProcessStartInfo();
+                startInfo.CreateNoWindow = false;
+                startInfo.UseShellExecute = false;
+                startInfo.FileName = dir.FullName + "\\e.bat";
+                startInfo.WindowStyle = ProcessWindowStyle.Hidden;
+
+
+                // Start the process with the info we specified.
+                // Call WaitForExit and then the using statement will close.
+                using (Process exeProcess = Process.Start(startInfo))
+                {
+                    exeProcess.WaitForExit();
+                    var sevenZipExitCode = exeProcess.ExitCode;
+                }
+
+
+                ConsoleHelper.WriteLine("extract complete");
             }
-            ConsoleHelper.WriteLine("complete");
+            
             return outDir;
         }
 

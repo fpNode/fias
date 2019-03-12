@@ -77,8 +77,32 @@ namespace FIASWeb
             STRUCNUM = reader.SafeGetString("STRUCNUM");
             STRSTATUS = reader.SafeGetInt("STRSTATUS");
         }
+    }
 
+    public class RoomNode
+    {
+        public Guid ROOMGUID { get; set; }
+        public Guid HOUSEGUID { get; set; }
+        public int POSTALCODE { get; set; }
+        public DateTime UPDATEDATE { get; set; }
+        public string FLATNUMBER { get; set; }
+        public int FLATTYPE { get; set; }
+        public string ROOMNUMBER { get; set; }
+        public int ROOMTYPE { get; set; }
 
+        public HouseNode Parent { get; set; }
+
+        public RoomNode(SqlDataReader reader)
+        {
+            ROOMGUID = reader.SafeGetGuid("ROOMGUID");
+            HOUSEGUID = reader.SafeGetGuid("HOUSEGUID");
+            POSTALCODE = reader.SafeGetInt("POSTALCODE");
+            UPDATEDATE = reader.GetDateTime(reader.GetOrdinal("UPDATEDATE"));
+            FLATNUMBER = reader.SafeGetString("FLATNUMBER");
+            FLATTYPE = reader.SafeGetInt("FLATTYPE");
+            ROOMNUMBER = reader.SafeGetString("ROOMNUMBER");
+            ROOMTYPE = reader.SafeGetInt("ROOMTYPE");
+        }
     }
 
     public class AddrNode
@@ -96,7 +120,6 @@ namespace FIASWeb
             var s = reader.SafeGetString("OFFNAME");
             OFFNAME = FORMALNAME == s ? FORMALNAME : s;
             SHORTNAME = reader.SafeGetString("SHORTNAME");
-            FIASCODE = reader.SafeGetString("FIASCODE");
             POSTALCODE = reader.SafeGetInt("POSTALCODE");
             OKATO = reader.SafeGetUlong("OKATO");
             OKTMO = reader.SafeGetUlong("OKTMO");
@@ -226,7 +249,7 @@ namespace FIASWeb
             {
                 conn.Open();
                 var cmd = conn.CreateCommand();
-                cmd.CommandText = "select [AOGUID], [PARENTGUID], [FORMALNAME], [OFFNAME], [SHORTNAME], [FIASCODE], [POSTALCODE], [OKATO], [OKTMO], [SHORTNAME], [AOLEVEL], [KLADRCODE], [UPDATEDATE] from  [dbo].[ADDROBJ]";
+                cmd.CommandText = "select [AOGUID], [PARENTGUID], [FORMALNAME], [OFFNAME], [SHORTNAME], [POSTALCODE], [OKATO], [OKTMO], [SHORTNAME], [AOLEVEL], [KLADRCODE], [UPDATEDATE] from  [dbo].[ADDROBJ]";
 
                 var reader = cmd.ExecuteReader();
                 while (reader.Read())

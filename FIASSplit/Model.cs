@@ -30,6 +30,7 @@ namespace FIASSplit.Models
 
         public virtual DbSet<ADDROBJ> ADDROBJS { get; set; }
         public virtual DbSet<HOUSE> HOUSES { get; set; }
+        public virtual DbSet<ROOM> ROOM { get; set; }
     }
 
     public class ADDROBJ
@@ -37,7 +38,6 @@ namespace FIASSplit.Models
         [Key]
         public Guid AOGUID { get; set; }
         public Guid? PARENTGUID { get; set; }
-        public string FIASCODE { get; set; }
         public string FORMALNAME { get; set; }
         public string OFFNAME { get; set; }
         public string SHORTNAME { get; set; }
@@ -63,5 +63,18 @@ namespace FIASSplit.Models
         public string BUILDNUM { get; set; }
         public string STRUCNUM { get; set; }
         public int STRSTATUS { get; set; }
+    }
+
+    public class ROOM
+    {
+        [Key]
+        public Guid ROOMGUID { get; set; }
+        public Guid HOUSEGUID { get; set; }
+        public int? POSTALCODE { get; set; }
+        public DateTime UPDATEDATE { get; set; }
+        public string FLATNUMBER { get; set; }
+        public int FLATTYPE { get; set; }
+        public string ROOMNUMBER { get; set; }
+        public int ROOMTYPE { get; set; }
     }
 }

@@ -1,8 +1,10 @@
-﻿using System;
+﻿using FIASSplit.Models;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -17,7 +19,6 @@ namespace FIASSplit
     {
         public Guid AOGUID { get; set; }
         public Guid PARENTGUID { get; set; }
-        public string FIASCODE { get; set; }
         public string FORMALNAME { get; set; }
         public string OFFNAME { get; set; }
         public string SHORTNAME { get; set; }
@@ -117,8 +118,29 @@ namespace FIASSplit
 
     class AddrXMLNode
     {
-        static Regex re = new Regex("<Object AOID=\"(.*?)\" AOGUID=\"(.*?)\"");
+        static Regex re = new Regex("<Object AOID=\"(.{36})\" AOGUID=\"(.{36})\"");
         static XmlSerializer Serializer = new XmlSerializer(typeof(ADDROBJREC), new XmlRootAttribute("Object"));
+        public static Dictionary<Guid, byte> _ActualIds = new Dictionary<Guid, byte>(1500000);
+
+        public static int c0 = 0;
+        public static int c1 = 0;
+        public static int c2 = 0;
+        public static int c3 = 0;
+
+        public static Dictionary<Guid, byte> GetActualIds()
+        {
+            if(_ActualIds.Count == 0)
+            {
+                using (var db = new FIASContext())
+                {
+                    foreach (var g in db.ADDROBJS.Select(a => a.AOGUID))
+                    {
+                        _ActualIds[g] = 0;
+                    }
+                }
+            }
+            return _ActualIds;
+        }
 
         public static string GetRecKey(string data)
         {
@@ -228,9 +250,6 @@ namespace FIASSplit
                 }
             }
 
-            var en2 = GetNodes(dir).GetEnumerator();
-            var d2 = en2.MoveNext() ? en2.Current : "";
-
             foreach (var n in GetNodes(dir))
             {
                 if (!delRec.ContainsKey(GetRecKey(n)))
@@ -240,64 +259,51 @@ namespace FIASSplit
             }
         }
 
-        public static ADDROBJREC MathRecord(List<ADDROBJREC> buf)
+        private static void WriteBuffer(List<ADDROBJREC> buf)
         {
-            if (buf.Count(br => br.LIVESTATUS != 0) == 0)
+            var log = new FileInfo(Path.Combine(Program.dataDir.FullName, string.Format("addr_{0}.txt", buf.First().AOGUID)));
+            using (StreamWriter w = log.CreateText())
             {
-                return null;
+                foreach (var tr in buf)
+                {
+                    Serializer.Serialize(w, tr);
+                }
+                w.Close();
             }
-            else
+        }
+
+        private static ADDROBJREC MathRecord(List<ADDROBJREC> buf)
+        {
+            try
             {
-                var temp = new List<ADDROBJREC>();
-                temp.AddRange(buf);
-
-                if (buf.Count > 1)
+                return buf.SingleOrDefault(r => r.LIVESTATUS == 1 && r.ENDDATE > DateTime.Now);
+            }
+            catch (Exception)
+            {
+                var rec = buf.FirstOrDefault(r => r.NEXTID != default(Guid));
+                if (rec != null)
                 {
-                    var prev = buf.Where(nr => nr.PREVID != default(Guid)).Select(pr => pr.PREVID).ToList();
-                    buf.RemoveAll(br => prev.Contains(br.AOID) || br.NEXTID != default(Guid));
-                }
+                    WriteBuffer(buf);
 
-                if (buf.Count > 1)
-                {
-                    buf.RemoveAll(br => br.ENDDATE < DateTime.Now);
-                }
-
-                if (buf.Count > 1)
-                {
-                    buf.RemoveAll(br => br.STARTDATE > DateTime.Now);
-                }
-
-                if (buf.Count > 1)
-                {
-                    var sd = buf.Select(br => br.STARTDATE).Max();
-                    buf.RemoveAll(br => br.STARTDATE < sd);
-                }
-
-                if (buf.Count > 1)
-                {
-                    var ud = buf.Select(br => br.UPDATEDATE).Max();
-                    buf.RemoveAll(br => br.UPDATEDATE < ud);
-                }
-
-                if (buf.Count > 1)
-                {
-                    var log = new FileInfo(Path.Combine(Program.dataDir.FullName, "err_addr.txt"));
-                    using (StreamWriter w = log.CreateText())
+                    // перебираем по NEXTID
+                    while (rec != null && rec.NEXTID != default(Guid))
                     {
-                        foreach (var tr in temp)
-                        {
-                            Serializer.Serialize(w, tr);
-                        }
-                        w.Close();
+                        Debug.Assert(buf.Where(r => r.AOID == rec.NEXTID).Count() == 1); // запись с таким ID единственная
+                        rec = buf.First(r => r.AOID == rec.NEXTID);
                     }
-                    throw new Exception("bad AddrObj records");
+                    ++c2;
                 }
-                else if (buf.Count == 0)
+                else
                 {
-                    return null;
-                }
+                    WriteBuffer(buf);
 
-                return buf.First();
+                    Debug.Assert(buf.Count(r => r.PREVID == default(Guid)) == 1); // запись у которой нет PREVID единственная
+                    rec = buf.First(r => r.PREVID == default(Guid));
+                    ++c3;
+                }
+                Debug.Assert(rec.ENDDATE > DateTime.Now);
+                Debug.Assert(rec.LIVESTATUS == 1);
+                return rec.LIVESTATUS == 1 && rec.ENDDATE > DateTime.Now ? rec : null;
             }
         }
 
@@ -315,6 +321,7 @@ namespace FIASSplit
                     var res = MathRecord(buf);
                     if (res != null)
                     {
+                        _ActualIds[res.AOGUID] = 0;
                         yield return res;
                     }
                     buf.Clear();
@@ -326,9 +333,52 @@ namespace FIASSplit
             var fres = MathRecord(buf);
             if (fres != null)
             {
+                Debug.Assert(fres.ENDDATE > DateTime.Now);
+                Debug.Assert(fres.LIVESTATUS == 1);
+
+                _ActualIds[fres.AOGUID] = 0;
                 yield return fres;
             }
 
+            yield break;
+        }
+
+        public static IEnumerable<ADDROBJREC> GetActual2(FileInfo file)
+        {
+
+            var delRec = new HashSet<string>();
+  
+            foreach (var r in FIASFile.ExtractNodes(file, "AS_DEL_ADDROBJ_"))
+            {
+                delRec.Add(GetRecKey(r));
+            }
+
+            var cur_date = DateTime.Now;
+            foreach (var n in FIASFile.ExtractNodes(file, "AS_ADDROBJ_"))
+            {
+                if (!delRec.Contains(GetRecKey(n)))
+                {
+                    var obj = (ADDROBJREC)Serializer.Deserialize(new StringReader(n));
+                    
+                    if (obj.LIVESTATUS == 1 && obj.ENDDATE > cur_date)
+                    {
+                        if(_ActualIds.ContainsKey(obj.AOGUID))
+                        {
+                            var log = new FileInfo(Path.Combine(Program.dataDir.FullName, "addr.txt"));
+                            using (StreamWriter w = log.CreateText())
+                            {
+                                w.WriteLine(n);
+                                w.Close();
+                            }
+                        }
+                        else
+                        {
+                            _ActualIds[obj.AOGUID] = 0;
+                            yield return obj;
+                        }
+                    }
+                }
+            }
             yield break;
         }
 
@@ -379,7 +429,6 @@ namespace FIASSplit
 
                 if (r.PARENTGUID != default(Guid))
                     row["PARENTGUID"] = r.PARENTGUID;
-                row["FIASCODE"] = r.FIASCODE;
                 row["FORMALNAME"] = r.FORMALNAME;
                 row["OFFNAME"] = r.OFFNAME;
                 row["SHORTNAME"] = r.SHORTNAME;
@@ -399,10 +448,11 @@ namespace FIASSplit
                 {
                     if (ch == null)
                     {
+                        Console.WriteLine();
                         ch = new CursorHelper();
                     }
 
-                    ch.WriteLine(string.Format("store: {0}", bulkCnt));
+                    ch.WriteLine(string.Format("store AO: {0}", bulkCnt.ToString("### ### ###")));
                     copy.WriteToServer(dt);
                     dt.Rows.Clear();
                 }
@@ -411,9 +461,10 @@ namespace FIASSplit
             dt.Rows.Clear();
             if (ch == null)
             {
+                Console.WriteLine();
                 ch = new CursorHelper();
             }
-            ch.WriteLine(string.Format("store: {0}", bulkCnt));
+            ch.WriteLine(string.Format("store AO: {0}", bulkCnt.ToString("### ### ###")));
             copy.Close();
         }
 
@@ -445,6 +496,11 @@ namespace FIASSplit
         public static void Upload(DirectoryInfo dir)
         {
              InsertRecords(GetActual(dir));
+        }
+
+        public static void Upload2(FileInfo file)
+        {
+            InsertRecords(GetActual2(file));
         }
 
         public static void Update(DirectoryInfo dir)

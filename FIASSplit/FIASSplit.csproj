@@ -59,18 +59,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AddrTable.cs" />
+    <Compile Include="Migrations\201712261019155_init.cs" />
+    <Compile Include="Migrations\201712261019155_init.Designer.cs">
+      <DependentUpon>201712261019155_init.cs</DependentUpon>
+    </Compile>
+    <Compile Include="HouseTable.cs" />
+    <Compile Include="RoomTable.cs" />
     <Compile Include="HouseRecSource.cs" />
     <Compile Include="AddrRecSource.cs" />
     <Compile Include="FIASEntity.cs" />
     <Compile Include="FIASFile.cs" />
-    <Compile Include="Migrations\201602091243548_init.cs" />
-    <Compile Include="Migrations\201602091243548_init.Designer.cs">
-      <DependentUpon>201602091243548_init.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201602161214415_AddHouseFields.cs" />
-    <Compile Include="Migrations\201602161214415_AddHouseFields.Designer.cs">
-      <DependentUpon>201602161214415_AddHouseFields.cs</DependentUpon>
-    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Model.cs" />
     <Compile Include="Program.cs" />
@@ -96,14 +95,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\201602091243548_init.resx">
-      <DependentUpon>201602091243548_init.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201602161214415_AddHouseFields.resx">
-      <DependentUpon>201602161214415_AddHouseFields.cs</DependentUpon>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <ItemGroup>
@@ -123,6 +114,11 @@
       <Generator>WCF Proxy Generator</Generator>
       <LastGenOutput>Reference.cs</LastGenOutput>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Migrations\201712261019155_init.resx">
+      <DependentUpon>201712261019155_init.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

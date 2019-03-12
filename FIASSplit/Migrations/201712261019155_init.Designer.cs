@@ -13,7 +13,7 @@ namespace FIASSplit.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "201602091243548_init"; }
+            get { return "201712261019155_init"; }
         }
         
         string IMigrationMetadata.Source

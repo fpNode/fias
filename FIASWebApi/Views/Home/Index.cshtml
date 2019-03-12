@@ -32,14 +32,19 @@
         <a class="list-group-item" data-bind="text: FullName, click: $parent.SearchHouse"></a>
     </div>
 
-    <div data-bind="if: CurrentAddr">
-        <button class="btn btn-lg" style="width:100%" data-bind="text: CurrentAddr().FullName, click: CurrentAddr().Select, css: { 'btn-success': CurrentAddr().Selected}">
-        </button>
+    <div class="list-group" data-bind="if: CurrentAddr">
+        <button class="btn btn-lg" style="width:100%" data-bind="text: CurrentAddr().FullName, click: SearchHouse(CurrentAddr()), css: { 'btn-success': CurrentAddr().Selected}"></button>
     </div>
 
-    <br />
-
     <div class="btn-group" data-bind="foreach: HouseObjects">
+        <button type="button" style="width: 50px; margin-bottom: 10px" class="btn btn-default" data-bind="text: FullName(), click: $parent.SearchRoom, css: { 'btn-success': Selected }"></button>
+    </div>
+
+    <div class="list-group" data-bind="if: CurrentHouse">
+        <button class="btn btn-default" style="width:50px" data-bind="text: CurrentHouse().FullName(), click: CurrentHouse().Select, css: { 'btn-success': CurrentHouse().Selected}"></button>
+    </div>
+
+    <div class="btn-group" data-bind="foreach: RoomObjects">
         <button type="button" style="width: 50px; margin-bottom: 10px" class="btn btn-default" data-bind="text: FullName(), click: Select, css: { 'btn-success': Selected }"></button>
     </div>
 
@@ -54,8 +59,7 @@
     <script src="~/Scripts/knockout.mapping-latest.js"></script>
 
     <script>
-        var apiUrl = "/FIAS";
-        var apiUrl2 = "/FIASHOUSE";
+        var apiUrl = "https://xml.farpoint-nn.ru";
     </script>
 
     <script src="~/Scripts/fias.js"></script>

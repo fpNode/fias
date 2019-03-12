@@ -1,8 +1,10 @@
-﻿using System;
+﻿using FIASSplit.Models;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -15,34 +17,36 @@ namespace FIASSplit
 {
     public class HOUSEREC
     {
-        [System.Xml.Serialization.XmlAttributeAttribute()]
+        [XmlAttribute()]
         public Guid HOUSEID { get; set; }
-        [System.Xml.Serialization.XmlAttributeAttribute()]
+        [XmlAttribute()]
         public Guid HOUSEGUID { get; set; }
-        [System.Xml.Serialization.XmlAttributeAttribute()]
+        [XmlAttribute()]
         public Guid AOGUID { get; set; }
-        [System.Xml.Serialization.XmlAttributeAttribute()]
+        [XmlAttribute()]
         public int POSTALCODE { get; set; }
-        [System.Xml.Serialization.XmlAttributeAttribute()]
+        [XmlAttribute()]
         public long OKATO { get; set; }
-        [System.Xml.Serialization.XmlAttributeAttribute()]
+        [XmlAttribute()]
         public long OKTMO { get; set; }
-        [System.Xml.Serialization.XmlAttributeAttribute()]
+        [XmlAttribute()]
         public DateTime UPDATEDATE { get; set; }
-        [System.Xml.Serialization.XmlAttributeAttribute()]
+        [XmlAttribute()]
         public string HOUSENUM { get; set; }
-        [System.Xml.Serialization.XmlAttributeAttribute()]
+        [XmlAttribute()]
         public int ESTSTATUS { get; set; }
-        [System.Xml.Serialization.XmlAttributeAttribute()]
+        [XmlAttribute()]
         public string BUILDNUM { get; set; }
-        [System.Xml.Serialization.XmlAttributeAttribute()]
+        [XmlAttribute()]
         public string STRUCNUM { get; set; }
-        [System.Xml.Serialization.XmlAttributeAttribute()]
+        [XmlAttribute()]
         public int STRSTATUS { get; set; }
-        [System.Xml.Serialization.XmlAttributeAttribute()]
+        [XmlAttribute()]
         public DateTime STARTDATE { get; set; }
-        [System.Xml.Serialization.XmlAttributeAttribute()]
+        [XmlAttribute()]
         public DateTime ENDDATE { get; set; }
+        [XmlAttribute()]
+        public int COUNTER { get; set; }
 
         public bool isEquivalent(HOUSEREC n)
         {
@@ -56,7 +60,8 @@ namespace FIASSplit
                 ESTSTATUS == n.ESTSTATUS &&
                 BUILDNUM == n.BUILDNUM &&
                 STRUCNUM == n.STRUCNUM &&
-                STRSTATUS == n.STRSTATUS
+                STRSTATUS == n.STRSTATUS &&
+                COUNTER == n.COUNTER
                );
         }
     }
@@ -78,8 +83,29 @@ namespace FIASSplit
 
     class HouseXMLNode
     {
-        static Regex re = new Regex("<House HOUSEID=\"(.*?)\" HOUSEGUID=\"(.*?)\"");
+        static Regex re = new Regex("<House HOUSEID=\"(.{36})\" HOUSEGUID=\"(.{36})\".*");
         static XmlSerializer Serializer = new XmlSerializer(typeof(HOUSEREC), new XmlRootAttribute("House"));
+        public static Dictionary<Guid, byte> _ActualIds = new Dictionary<Guid, byte>(30000000);
+
+        public static int c0 = 0;
+        public static int c1 = 0;
+        public static int c2 = 0;
+        public static int c3 = 0;
+
+        public static Dictionary<Guid, byte> GetActualIds()
+        {
+            if (_ActualIds.Count == 0)
+            {
+                using (var db = new FIASContext())
+                {
+                    foreach (var h in db.HOUSES.Select(a => a.HOUSEGUID))
+                    {
+                        _ActualIds[h] = 0;
+                    }
+                }
+            }
+            return _ActualIds;
+        }
 
         public static string GetRecKey(string data)
         {
@@ -87,13 +113,13 @@ namespace FIASSplit
             return m.Groups[2].Value + m.Groups[1].Value;
         }
 
-        public static void FindNodeInFile(FileInfo f)
+        public static void FindNodeInFile(FileInfo f, string houseguid)
         {
             var reader = XmlReader.Create(f.FullName);
             reader.MoveToContent();
             reader.Read();
 
-            var id = Guid.Parse("28c8cc94-03cd-4694-babe-30bb8e717949");
+            var id = Guid.Parse(houseguid);
 
             var ch = new CursorHelper();
             int cnt = 0;
@@ -105,14 +131,17 @@ namespace FIASSplit
 
                 if (obj.HOUSEGUID == id)
                 {
+                    Console.WriteLine();
                     Console.WriteLine(data);
                 }
 
                 if (++cnt % 10000 == 0)
                 {
-                    ch.WriteLine(string.Format("process {0} rows", cnt));
+                    //ch.WriteLine(string.Format("process {0} rows", cnt));
+                    Console.Write(".");
                 }
             }
+            Console.WriteLine();
         }
 
         public static IEnumerable<string> GetNodes(DirectoryInfo dir)
@@ -189,9 +218,6 @@ namespace FIASSplit
                 }
             }
 
-            var en2 = GetNodes(dir).GetEnumerator();
-            var d2 = en2.MoveNext() ? en2.Current : "";
-
             foreach (var n in GetNodes(dir))
             {
                 if (!delRec.ContainsKey(GetRecKey(n)))
@@ -201,7 +227,32 @@ namespace FIASSplit
             }
         }
 
+        private static void WriteBuffer(List<HOUSEREC> buf)
+        {
+            var log = new FileInfo(Path.Combine(Program.dataDir.FullName, string.Format("house_{0}.txt", buf.First().HOUSEGUID)));
+            using (StreamWriter w = log.CreateText())
+            {
+                foreach (var tr in buf)
+                {
+                    Serializer.Serialize(w, tr);
+                }
+                w.Close();
+            }
+        }
+
         public static HOUSEREC MathRecord(List<HOUSEREC> buf)
+        {
+            try
+            {
+                return buf.SingleOrDefault(r => r.ENDDATE > DateTime.Now && r.STARTDATE < DateTime.Now);
+            }
+            catch (Exception)
+            {
+                WriteBuffer(buf);
+                return null;
+            }
+        }
+        public static HOUSEREC MathRecordOld(List<HOUSEREC> buf)
         {
             if (buf.Count(br => br.ENDDATE < DateTime.Now) == buf.Count())
             {
@@ -234,16 +285,17 @@ namespace FIASSplit
                     buf.RemoveAll(br => br.UPDATEDATE < ud);
                 }
 
-                if (buf.Count != 1)
+                if (buf.Count > 1)
                 {
-                    foreach (var tr in temp)
-                    {
-                        Console.WriteLine(string.Format("{0} id: {1} s: {2} e:{3} u: {4}", tr.HOUSEGUID, tr.HOUSEID, tr.STARTDATE.ToShortDateString(), tr.ENDDATE.ToShortDateString(), tr.UPDATEDATE.ToShortDateString()));
-                    }
-
-                    throw new Exception("bad AddrObj records");
+                    var ud = buf.Select(br => br.COUNTER).Max();
+                    buf.RemoveAll(br => br.COUNTER < ud);
                 }
 
+                if (buf.Count != 1)
+                {
+                    WriteBuffer(temp);
+                    return null;
+                }
                 return buf.First();
             }
         }
@@ -252,26 +304,11 @@ namespace FIASSplit
         {
             var buf = new List<HOUSEREC>();
             var prevId = Guid.Empty;
-            var AOIds = new Dictionary<Guid, bool>();
 
-            CursorHelper ch = null;
-            foreach (var r in AddrXMLNode.GetActual(dir))
-            {
-                AOIds[r.AOGUID] = true;
-                if(AOIds.Count % 10000 == 0)
-                {
-                    if (ch == null)
-                    {
-                        ch = new CursorHelper();
-                    }
-                    ch.WriteLine(string.Format("load {0} AOGUID", AOIds.Count));
-                }
-            }
-            if (ch == null)
-            {
-                ch = new CursorHelper();
-            }
-            ch.WriteLine(string.Format("load {0} AOGUID", AOIds.Count));
+            var actualAOIds = AddrXMLNode.GetActualIds();
+
+            CursorHelper ch = new CursorHelper();
+            ch.WriteLine(string.Format("load {0} AOGUID", actualAOIds.Count));
 
             foreach (var r in GetOrderedNodesFull(dir))
             {
@@ -280,8 +317,9 @@ namespace FIASSplit
                 if (obj.HOUSEGUID != prevId)
                 {
                     var res = MathRecord(buf);
-                    if (res != null && AOIds.ContainsKey(res.AOGUID))
+                    if (res != null && actualAOIds.ContainsKey(res.AOGUID))
                     {
+                        _ActualIds[res.HOUSEGUID] = 0;
                         yield return res;
                     }
                     buf.Clear();
@@ -291,9 +329,51 @@ namespace FIASSplit
             }
 
             var fres = MathRecord(buf);
-            if (fres != null && AOIds.ContainsKey(fres.AOGUID))
+            if (fres != null && actualAOIds.ContainsKey(fres.AOGUID))
             {
+                _ActualIds[fres.HOUSEGUID] = 0;
                 yield return fres;
+            }
+            yield break;
+        }
+
+        public static IEnumerable<HOUSEREC> GetActual2(FileInfo file)
+        {
+
+            var delRec = new HashSet<string>();
+
+            foreach (var r in FIASFile.ExtractNodes(file, "AS_DEL_HOUSE_"))
+            {
+                delRec.Add(GetRecKey(r));
+            }
+
+            var actualAOIds = AddrXMLNode.GetActualIds();
+
+            var cur_date = DateTime.Now;
+            foreach (var n in FIASFile.ExtractNodes(file, "AS_HOUSE_"))
+            {
+                if (!delRec.Contains(GetRecKey(n)))
+                {
+                    var obj = (HOUSEREC)Serializer.Deserialize(new StringReader(n));
+
+                    if (obj.ENDDATE > DateTime.Now && obj.STARTDATE < DateTime.Now  && actualAOIds.ContainsKey(obj.AOGUID))
+                    {
+                        if (_ActualIds.ContainsKey(obj.HOUSEGUID))
+                        {
+                            var log = new FileInfo(Path.Combine(Program.dataDir.FullName, "house.txt"));
+                            using (StreamWriter w = log.CreateText())
+                            {
+                                w.WriteLine(n);
+                                w.Close();
+                            }
+                        }
+                        else
+                        {
+                            _ActualIds[obj.HOUSEGUID] = 0;
+                            yield return obj;
+                        }
+                    }
+                }
             }
             yield break;
         }
@@ -366,9 +446,10 @@ namespace FIASSplit
                 {
                     if (ch == null)
                     {
+                        Console.WriteLine();
                         ch = new CursorHelper();
                     }
-                    ch.WriteLine(string.Format("store: {0}", bulkCnt));
+                    ch.WriteLine(string.Format("store HOUSE: {0}", bulkCnt.ToString("### ### ###")));
                     copy.WriteToServer(dt);
                     dt.Rows.Clear();
                 }
@@ -377,9 +458,10 @@ namespace FIASSplit
             dt.Rows.Clear();
             if (ch == null)
             {
+                Console.WriteLine();
                 ch = new CursorHelper();
             }
-            ch.WriteLine(string.Format("store: {0}", bulkCnt));
+            ch.WriteLine(string.Format("store HOUSE: {0}", bulkCnt.ToString("### ### ###")));
             copy.Close();
         }
 
@@ -411,6 +493,11 @@ namespace FIASSplit
         public static void Upload(DirectoryInfo dir)
         {
             InsertRecords(GetActual(dir));
+        }
+
+        public static void Upload2(FileInfo file)
+        {
+            InsertRecords(GetActual2(file));
         }
 
         public static void Update(DirectoryInfo dir)
