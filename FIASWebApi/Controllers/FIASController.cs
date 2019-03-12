@@ -22,7 +22,9 @@ namespace FIASWeb.Controllers
         public IEnumerable<AddrNode> Get(string query, int skip = 0, int take = 10)
         {
             var lst = AddrNode.ParceTags(query);
-            return AddrNode.FindNodes(query).OrderByDescending(n => n.Raiting(lst)).Skip(skip).Take(take);
+            var q = AddrNode.FindNodes(query).OrderByDescending(n => n.Raiting(lst)).Skip(skip).Take(take).ToList();
+            q.ForEach(e => e.SetOKTMO());
+            return q;
         }
 
         // POST: api/FIAS
