@@ -22,6 +22,8 @@ namespace FIASWebApi
             BundleConfig.RegisterBundles(BundleTable.Bundles);
 
             AddrNode.Load();
+            var appDataFolder = Server.MapPath("App_Data");
+            AddrNode.oktmo.Run(appDataFolder + @"\regions.csv", appDataFolder + @"\OKTMO.csv");
             //(ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString);
             GC.Collect();
         }
