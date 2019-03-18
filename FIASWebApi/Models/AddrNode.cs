@@ -111,6 +111,8 @@ namespace FIASWeb
         static Dictionary<string, List<AddrNode>> NodeDic = new Dictionary<string, List<AddrNode>>();
         static Dictionary<string, List<string>> NodeKey = new Dictionary<string, List<string>>();
 
+        public static OKTMO.OKTMOService oktmo = new OKTMO.OKTMOService();
+
         public AddrNode(SqlDataReader reader)
         {
             AOGUID = reader.SafeGetGuid("AOGUID");
@@ -348,7 +350,12 @@ namespace FIASWeb
 
         public void SetOKTMO()
         {
-            OKTMOName = OKTMO.ToString();
+            string originalOktmoStr = OKTMO.ToString();
+            string oktmoStr = "00000000000" + originalOktmoStr;
+            var len = originalOktmoStr.Length;
+            len += (len == 10 || len == 7 || len == 4 || len == 1) ? 1 : 0;
+            oktmoStr = oktmoStr.Substring(oktmoStr.Length- len);
+            OKTMOName = oktmo.GetOKTMO(oktmoStr);
             if (null != Parent)
             {
                 Parent.SetOKTMO();

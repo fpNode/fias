@@ -69,8 +69,10 @@ namespace FIASWeb.Controllers
                     var reader = cmd.ExecuteReader();
                     while (reader.Read())
                     {
-                        var n = new HouseNode(reader);
-                        n.Parent = addr;
+                        var n = new HouseNode(reader)
+                        {
+                            Parent = addr
+                        };
                         result.Add(n);
                     }
                     reader.Close();
@@ -135,8 +137,10 @@ namespace FIASWeb.Controllers
                 reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
-                    var n = new RoomNode(reader);
-                    n.Parent = house;
+                    var n = new RoomNode(reader)
+                    {
+                        Parent = house
+                    };
                     result.Add(n);
                 }
                 reader.Close();
