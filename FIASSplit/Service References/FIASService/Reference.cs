@@ -15,7 +15,7 @@ namespace FIASSplit.FIASService {
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
-    [System.Runtime.Serialization.DataContractAttribute(Name="DownloadFileInfo", Namespace="http://fias.nalog.ru/WebServices/Public/DownloadService.asmx")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="DownloadFileInfo", Namespace="https://fias.nalog.ru/WebServices/Public/DownloadService.asmx")]
     [System.SerializableAttribute()]
     public partial class DownloadFileInfo : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
         
@@ -170,25 +170,25 @@ namespace FIASSplit.FIASService {
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
-    [System.ServiceModel.ServiceContractAttribute(Namespace="http://fias.nalog.ru/WebServices/Public/DownloadService.asmx", ConfigurationName="FIASService.DownloadServiceSoap")]
+    [System.ServiceModel.ServiceContractAttribute(Namespace="https://fias.nalog.ru/WebServices/Public/DownloadService.asmx", ConfigurationName="FIASService.DownloadServiceSoap")]
     public interface DownloadServiceSoap {
         
-        // CODEGEN: Generating message contract since element name GetLastDownloadFileInfoResult from namespace http://fias.nalog.ru/WebServices/Public/DownloadService.asmx is not marked nillable
-        [System.ServiceModel.OperationContractAttribute(Action="http://fias.nalog.ru/WebServices/Public/DownloadService.asmx/GetLastDownloadFileI" +
-            "nfo", ReplyAction="*")]
+        // CODEGEN: Generating message contract since element name GetLastDownloadFileInfoResult from namespace https://fias.nalog.ru/WebServices/Public/DownloadService.asmx is not marked nillable
+        [System.ServiceModel.OperationContractAttribute(Action="https://fias.nalog.ru/WebServices/Public/DownloadService.asmx/GetLastDownloadFile" +
+            "Info", ReplyAction="*")]
         FIASSplit.FIASService.GetLastDownloadFileInfoResponse GetLastDownloadFileInfo(FIASSplit.FIASService.GetLastDownloadFileInfoRequest request);
         
-        [System.ServiceModel.OperationContractAttribute(Action="http://fias.nalog.ru/WebServices/Public/DownloadService.asmx/GetLastDownloadFileI" +
-            "nfo", ReplyAction="*")]
+        [System.ServiceModel.OperationContractAttribute(Action="https://fias.nalog.ru/WebServices/Public/DownloadService.asmx/GetLastDownloadFile" +
+            "Info", ReplyAction="*")]
         System.Threading.Tasks.Task<FIASSplit.FIASService.GetLastDownloadFileInfoResponse> GetLastDownloadFileInfoAsync(FIASSplit.FIASService.GetLastDownloadFileInfoRequest request);
         
-        // CODEGEN: Generating message contract since element name GetAllDownloadFileInfoResult from namespace http://fias.nalog.ru/WebServices/Public/DownloadService.asmx is not marked nillable
-        [System.ServiceModel.OperationContractAttribute(Action="http://fias.nalog.ru/WebServices/Public/DownloadService.asmx/GetAllDownloadFileIn" +
-            "fo", ReplyAction="*")]
+        // CODEGEN: Generating message contract since element name GetAllDownloadFileInfoResult from namespace https://fias.nalog.ru/WebServices/Public/DownloadService.asmx is not marked nillable
+        [System.ServiceModel.OperationContractAttribute(Action="https://fias.nalog.ru/WebServices/Public/DownloadService.asmx/GetAllDownloadFileI" +
+            "nfo", ReplyAction="*")]
         FIASSplit.FIASService.GetAllDownloadFileInfoResponse GetAllDownloadFileInfo(FIASSplit.FIASService.GetAllDownloadFileInfoRequest request);
         
-        [System.ServiceModel.OperationContractAttribute(Action="http://fias.nalog.ru/WebServices/Public/DownloadService.asmx/GetAllDownloadFileIn" +
-            "fo", ReplyAction="*")]
+        [System.ServiceModel.OperationContractAttribute(Action="https://fias.nalog.ru/WebServices/Public/DownloadService.asmx/GetAllDownloadFileI" +
+            "nfo", ReplyAction="*")]
         System.Threading.Tasks.Task<FIASSplit.FIASService.GetAllDownloadFileInfoResponse> GetAllDownloadFileInfoAsync(FIASSplit.FIASService.GetAllDownloadFileInfoRequest request);
     }
     
@@ -198,7 +198,7 @@ namespace FIASSplit.FIASService {
     [System.ServiceModel.MessageContractAttribute(IsWrapped=false)]
     public partial class GetLastDownloadFileInfoRequest {
         
-        [System.ServiceModel.MessageBodyMemberAttribute(Name="GetLastDownloadFileInfo", Namespace="http://fias.nalog.ru/WebServices/Public/DownloadService.asmx", Order=0)]
+        [System.ServiceModel.MessageBodyMemberAttribute(Name="GetLastDownloadFileInfo", Namespace="https://fias.nalog.ru/WebServices/Public/DownloadService.asmx", Order=0)]
         public FIASSplit.FIASService.GetLastDownloadFileInfoRequestBody Body;
         
         public GetLastDownloadFileInfoRequest() {
@@ -225,7 +225,7 @@ namespace FIASSplit.FIASService {
     [System.ServiceModel.MessageContractAttribute(IsWrapped=false)]
     public partial class GetLastDownloadFileInfoResponse {
         
-        [System.ServiceModel.MessageBodyMemberAttribute(Name="GetLastDownloadFileInfoResponse", Namespace="http://fias.nalog.ru/WebServices/Public/DownloadService.asmx", Order=0)]
+        [System.ServiceModel.MessageBodyMemberAttribute(Name="GetLastDownloadFileInfoResponse", Namespace="https://fias.nalog.ru/WebServices/Public/DownloadService.asmx", Order=0)]
         public FIASSplit.FIASService.GetLastDownloadFileInfoResponseBody Body;
         
         public GetLastDownloadFileInfoResponse() {
@@ -239,7 +239,7 @@ namespace FIASSplit.FIASService {
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-    [System.Runtime.Serialization.DataContractAttribute(Namespace="http://fias.nalog.ru/WebServices/Public/DownloadService.asmx")]
+    [System.Runtime.Serialization.DataContractAttribute(Namespace="https://fias.nalog.ru/WebServices/Public/DownloadService.asmx")]
     public partial class GetLastDownloadFileInfoResponseBody {
         
         [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue=false, Order=0)]
@@ -259,7 +259,7 @@ namespace FIASSplit.FIASService {
     [System.ServiceModel.MessageContractAttribute(IsWrapped=false)]
     public partial class GetAllDownloadFileInfoRequest {
         
-        [System.ServiceModel.MessageBodyMemberAttribute(Name="GetAllDownloadFileInfo", Namespace="http://fias.nalog.ru/WebServices/Public/DownloadService.asmx", Order=0)]
+        [System.ServiceModel.MessageBodyMemberAttribute(Name="GetAllDownloadFileInfo", Namespace="https://fias.nalog.ru/WebServices/Public/DownloadService.asmx", Order=0)]
         public FIASSplit.FIASService.GetAllDownloadFileInfoRequestBody Body;
         
         public GetAllDownloadFileInfoRequest() {
@@ -286,7 +286,7 @@ namespace FIASSplit.FIASService {
     [System.ServiceModel.MessageContractAttribute(IsWrapped=false)]
     public partial class GetAllDownloadFileInfoResponse {
         
-        [System.ServiceModel.MessageBodyMemberAttribute(Name="GetAllDownloadFileInfoResponse", Namespace="http://fias.nalog.ru/WebServices/Public/DownloadService.asmx", Order=0)]
+        [System.ServiceModel.MessageBodyMemberAttribute(Name="GetAllDownloadFileInfoResponse", Namespace="https://fias.nalog.ru/WebServices/Public/DownloadService.asmx", Order=0)]
         public FIASSplit.FIASService.GetAllDownloadFileInfoResponseBody Body;
         
         public GetAllDownloadFileInfoResponse() {
@@ -300,7 +300,7 @@ namespace FIASSplit.FIASService {
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-    [System.Runtime.Serialization.DataContractAttribute(Namespace="http://fias.nalog.ru/WebServices/Public/DownloadService.asmx")]
+    [System.Runtime.Serialization.DataContractAttribute(Namespace="https://fias.nalog.ru/WebServices/Public/DownloadService.asmx")]
     public partial class GetAllDownloadFileInfoResponseBody {
         
         [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue=false, Order=0)]

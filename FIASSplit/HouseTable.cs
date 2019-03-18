@@ -31,16 +31,23 @@ namespace FIASSplit
                 cmd.CommandText = "truncate table[dbo].[HOUSE]";
                 cmd.ExecuteNonQuery();
 
-                cmd.CommandText = "DROP INDEX [FK_AOID] ON [dbo].[HOUSE]";
-                cmd.ExecuteNonQuery();
-                cmd.CommandText = "ALTER TABLE [dbo].[HOUSE] DROP CONSTRAINT [PK_dbo.HOUSE]";
-                cmd.ExecuteNonQuery();
+                try
+                {
+                    cmd.CommandText = "DROP INDEX [FK_AOID] ON [dbo].[HOUSE]";
+                    cmd.ExecuteNonQuery();
+                    cmd.CommandText = "ALTER TABLE [dbo].[HOUSE] DROP CONSTRAINT [PK_dbo.HOUSE]";
+                    cmd.ExecuteNonQuery();
+                }
+                catch (Exception)
+                {
+                }
+
 
                 conn.Close();
             }
         }
 
-        private static void CreateIndex()
+        public static void CreateIndex()
         {
             using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString))
             {
@@ -176,7 +183,7 @@ namespace FIASSplit
                             case "POSTALCODE":
                             case "OKATO":
                             case "OKTMO":
-                                if (int.TryParse(reader.Value, out int code))
+                                if (long.TryParse(reader.Value, out long code))
                                 {
                                     row[reader.Name] = code;
                                 }
@@ -213,24 +220,38 @@ namespace FIASSplit
                     }
                     reader.Read();
 
-                    if (isActual && !_ActualIds.ContainsKey((Guid)row["HOUSEGUID"]))
+                    var errPath = Path.Combine(Program.dataDir.FullName, "house_err.txt");
+                    if (isActual)
                     {
-                        _ActualIds[(Guid)row["HOUSEGUID"]] = 0;
-
-                        dt.Rows.Add(row);
-
-                        if (++bulkCnt % 5000 == 0)
+                        if (_ActualIds.ContainsKey((Guid)row["HOUSEGUID"]))
                         {
-                            yield return dt;
-                            dt = dt.Clone();
+                            _ActualIds[(Guid)row["HOUSEGUID"]] += 1;
 
-                            if (ch == null)
+                            using (StreamWriter w = new StreamWriter(errPath, true, Encoding.UTF8))
                             {
-                                Console.WriteLine();
-                                Console.WriteLine();
-                                ch = new CursorHelper();
+                                w.WriteLine(row["HOUSEGUID"]);
+                                w.Close();
                             }
-                            ch.WriteLine(string.Format("load HOUSE: {0}; speed {1} row/s", bulkCnt.ToString("### ### ###"), (bulkCnt / (DateTime.Now - cur_date).TotalSeconds).ToString("### ###")));
+                        }
+                        else
+                        {
+                            _ActualIds[(Guid)row["HOUSEGUID"]] = 0;
+                        
+                            dt.Rows.Add(row);
+
+                            if (++bulkCnt % 5000 == 0)
+                            {
+                                yield return dt;
+                                dt = dt.Clone();
+
+                                if (ch == null)
+                                {
+                                    Console.WriteLine();
+                                    Console.WriteLine();
+                                    ch = new CursorHelper();
+                                }
+                                ch.WriteLine(string.Format("load HOUSE: {0}; speed {1} row/s", bulkCnt.ToString("### ### ###"), (bulkCnt / (DateTime.Now - cur_date).TotalSeconds).ToString("### ###")));
+                            }
                         }
                     }
                 }

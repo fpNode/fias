@@ -22,6 +22,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -31,6 +32,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
@@ -83,7 +85,7 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
-    <None Include="Service References\FIASService\DownloadService.wsdl" />
+    <None Include="Service References\FIASService\DownloadService1.wsdl" />
     <None Include="Service References\FIASService\FIASSplit.FIASService.DownloadFileInfo.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
@@ -101,9 +103,6 @@
     <WCFMetadataStorage Include="Service References\FIASService\" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Service References\FIASService\DownloadService.disco" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Service References\FIASService\configuration91.svcinfo" />
   </ItemGroup>
   <ItemGroup>
@@ -119,6 +118,9 @@
     <EmbeddedResource Include="Migrations\201712261019155_init.resx">
       <DependentUpon>201712261019155_init.cs</DependentUpon>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\FIASService\DownloadService1.disco" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

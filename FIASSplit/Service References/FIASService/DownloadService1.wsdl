@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<wsdl:definitions xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://fias.nalog.ru/WebServices/Public/DownloadService.asmx" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" targetNamespace="http://fias.nalog.ru/WebServices/Public/DownloadService.asmx" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+<wsdl:definitions xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="https://fias.nalog.ru/WebServices/Public/DownloadService.asmx" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" targetNamespace="https://fias.nalog.ru/WebServices/Public/DownloadService.asmx" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
   <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Служба получения обновлений</wsdl:documentation>
   <wsdl:types>
-    <s:schema elementFormDefault="qualified" targetNamespace="http://fias.nalog.ru/WebServices/Public/DownloadService.asmx">
+    <s:schema elementFormDefault="qualified" targetNamespace="https://fias.nalog.ru/WebServices/Public/DownloadService.asmx">
       <s:element name="GetLastDownloadFileInfo">
         <s:complexType />
       </s:element>
@@ -69,7 +69,7 @@
   <wsdl:binding name="DownloadServiceSoap" type="tns:DownloadServiceSoap">
     <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
     <wsdl:operation name="GetLastDownloadFileInfo">
-      <soap:operation soapAction="http://fias.nalog.ru/WebServices/Public/DownloadService.asmx/GetLastDownloadFileInfo" style="document" />
+      <soap:operation soapAction="https://fias.nalog.ru/WebServices/Public/DownloadService.asmx/GetLastDownloadFileInfo" style="document" />
       <wsdl:input>
         <soap:body use="literal" />
       </wsdl:input>
@@ -78,7 +78,7 @@
       </wsdl:output>
     </wsdl:operation>
     <wsdl:operation name="GetAllDownloadFileInfo">
-      <soap:operation soapAction="http://fias.nalog.ru/WebServices/Public/DownloadService.asmx/GetAllDownloadFileInfo" style="document" />
+      <soap:operation soapAction="https://fias.nalog.ru/WebServices/Public/DownloadService.asmx/GetAllDownloadFileInfo" style="document" />
       <wsdl:input>
         <soap:body use="literal" />
       </wsdl:input>
@@ -90,7 +90,7 @@
   <wsdl:binding name="DownloadServiceSoap12" type="tns:DownloadServiceSoap">
     <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
     <wsdl:operation name="GetLastDownloadFileInfo">
-      <soap12:operation soapAction="http://fias.nalog.ru/WebServices/Public/DownloadService.asmx/GetLastDownloadFileInfo" style="document" />
+      <soap12:operation soapAction="https://fias.nalog.ru/WebServices/Public/DownloadService.asmx/GetLastDownloadFileInfo" style="document" />
       <wsdl:input>
         <soap12:body use="literal" />
       </wsdl:input>
@@ -99,7 +99,7 @@
       </wsdl:output>
     </wsdl:operation>
     <wsdl:operation name="GetAllDownloadFileInfo">
-      <soap12:operation soapAction="http://fias.nalog.ru/WebServices/Public/DownloadService.asmx/GetAllDownloadFileInfo" style="document" />
+      <soap12:operation soapAction="https://fias.nalog.ru/WebServices/Public/DownloadService.asmx/GetAllDownloadFileInfo" style="document" />
       <wsdl:input>
         <soap12:body use="literal" />
       </wsdl:input>
@@ -111,10 +111,10 @@
   <wsdl:service name="DownloadService">
     <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Служба получения обновлений</wsdl:documentation>
     <wsdl:port name="DownloadServiceSoap" binding="tns:DownloadServiceSoap">
-      <soap:address location="http://fias.nalog.ru/WebServices/Public/DownloadService.asmx" />
+      <soap:address location="https://fias.nalog.ru/WebServices/Public/DownloadService.asmx" />
     </wsdl:port>
     <wsdl:port name="DownloadServiceSoap12" binding="tns:DownloadServiceSoap12">
-      <soap12:address location="http://fias.nalog.ru/WebServices/Public/DownloadService.asmx" />
+      <soap12:address location="https://fias.nalog.ru/WebServices/Public/DownloadService.asmx" />
     </wsdl:port>
   </wsdl:service>
 </wsdl:definitions>

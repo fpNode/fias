@@ -29,7 +29,7 @@ namespace FIASSplit
 
     class RoomTable
     {
-        private static Dictionary<Guid, byte>_ActualIds = new Dictionary<Guid, byte>(40000000);
+        private static Dictionary<Guid, byte>_ActualIds = new Dictionary<Guid, byte>(60000000);
 
         private static void TrunTable()
         {
@@ -43,10 +43,16 @@ namespace FIASSplit
                 cmd.CommandText = "truncate table[dbo].[ROOM]";
                 cmd.ExecuteNonQuery();
 
-                cmd.CommandText = "DROP INDEX [FK_HOUSEGUID] ON [dbo].[ROOM]";
-                cmd.ExecuteNonQuery();
-                cmd.CommandText = "ALTER TABLE [dbo].[ROOM] DROP CONSTRAINT [PK_dbo.ROOM]";
-                cmd.ExecuteNonQuery();
+                try
+                {
+                    cmd.CommandText = "DROP INDEX [FK_HOUSEGUID] ON [dbo].[ROOM]";
+                    cmd.ExecuteNonQuery();
+                    cmd.CommandText = "ALTER TABLE [dbo].[ROOM] DROP CONSTRAINT [PK_dbo.ROOM]";
+                    cmd.ExecuteNonQuery();
+                }
+                catch (Exception)
+                {
+                }
 
                 conn.Close();
             }
@@ -159,29 +165,45 @@ namespace FIASSplit
                     }
                     reader.Read();
 
-                    if (isActual && !_ActualIds.ContainsKey((Guid)row["ROOMGUID"]))
+                    var errPath = Path.Combine(Program.dataDir.FullName, "room_err.txt");
+
+                    if (isActual)
                     {
-                        _ActualIds[(Guid)row["ROOMGUID"]] = 0;
 
-                        if(row["ROOMTYPE"] is DBNull)
+                         if (_ActualIds.ContainsKey((Guid)row["ROOMGUID"]))
                         {
-                            row["ROOMTYPE"] = 0;
-                        }
+                            _ActualIds[(Guid)row["ROOMGUID"]] += 1;
 
-                        dt.Rows.Add(row);
-
-                        if (++bulkCnt % 5000 == 0)
-                        {
-                            yield return dt;
-                            dt = dt.Clone();
-
-                            if (ch == null)
+                            using (StreamWriter w = new StreamWriter(errPath, true, Encoding.UTF8))
                             {
-                                Console.WriteLine();
-                                Console.WriteLine();
-                                ch = new CursorHelper();
+                                w.WriteLine(row["HOUSEGUID"]);
+                                w.Close();
                             }
-                            ch.WriteLine(string.Format("load ROOM: {0}; speed {1} row/s", bulkCnt.ToString("### ### ###"), (bulkCnt / (DateTime.Now - cur_date).TotalSeconds).ToString("### ###")));
+                        }
+                        else
+                        {
+                            _ActualIds[(Guid)row["ROOMGUID"]] = 0;
+
+                            if (row["ROOMTYPE"] is DBNull)
+                            {
+                                row["ROOMTYPE"] = 0;
+                            }
+
+                            dt.Rows.Add(row);
+
+                            if (++bulkCnt % 5000 == 0)
+                            {
+                                yield return dt;
+                                dt = dt.Clone();
+
+                                if (ch == null)
+                                {
+                                    Console.WriteLine();
+                                    Console.WriteLine();
+                                    ch = new CursorHelper();
+                                }
+                                ch.WriteLine(string.Format("load ROOM: {0}; speed {1} row/s", bulkCnt.ToString("### ### ###"), (bulkCnt / (DateTime.Now - cur_date).TotalSeconds).ToString("### ###")));
+                            }
                         }
                     }
                 }

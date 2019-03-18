@@ -31,14 +31,20 @@ namespace FIASSplit
                 cmd.CommandText = "truncate table[dbo].[ADDROBJ]";
                 cmd.ExecuteNonQuery();
 
-                cmd.CommandText = "ALTER TABLE [dbo].[ADDROBJ] DROP CONSTRAINT [PK_dbo.ADDROBJ]";
-                cmd.ExecuteNonQuery();
+                try
+                {
+                    cmd.CommandText = "ALTER TABLE [dbo].[ADDROBJ] DROP CONSTRAINT [PK_dbo.ADDROBJ]";
+                    cmd.ExecuteNonQuery();
+                }
+                catch (Exception)
+                {
+                }
 
                 conn.Close();
             }
         }
 
-        private static void CreateIndex()
+        public static void CreateIndex()
         {
             using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString))
             {
@@ -170,7 +176,7 @@ namespace FIASSplit
                             case "POSTALCODE":
                             case "OKATO":
                             case "OKTMO":
-                                if (int.TryParse(reader.Value, out int code))
+                                if (long.TryParse(reader.Value, out long code))
                                 {
                                     row[reader.Name] = code;
                                 }
@@ -197,24 +203,38 @@ namespace FIASSplit
                     }
                     reader.Read();
 
-                    if (isActual && !_ActualIds.ContainsKey((Guid)row["AOGUID"]))
+                    var errPath = Path.Combine(Program.dataDir.FullName, "addr_err.txt");
+                    if (isActual)
                     {
-                        _ActualIds[(Guid)row["AOGUID"]] = 0;
-
-                        dt.Rows.Add(row);
-
-                        if (++bulkCnt % 5000 == 0)
+                        if (_ActualIds.ContainsKey((Guid)row["AOGUID"]))
                         {
-                            yield return dt;
-                            dt = dt.Clone();
+                            _ActualIds[(Guid)row["AOGUID"]] += 1;
 
-                            if (ch == null)
+                            using (StreamWriter w = new StreamWriter(errPath, true, Encoding.UTF8))
                             {
-                                Console.WriteLine();
-                                Console.WriteLine();
-                                ch = new CursorHelper();
+                                w.WriteLine(row["AOGUID"]);
+                                w.Close();
                             }
-                            ch.WriteLine(string.Format("load Addr: {0}; speed {1} row/s", bulkCnt.ToString("### ### ###"), (bulkCnt / (DateTime.Now - cur_date).TotalSeconds).ToString("### ###")));
+                        }
+                        else
+                        {
+                            _ActualIds[(Guid)row["AOGUID"]] = 0;
+
+                            dt.Rows.Add(row);
+
+                            if (++bulkCnt % 5000 == 0)
+                            {
+                                yield return dt;
+                                dt = dt.Clone();
+
+                                if (ch == null)
+                                {
+                                    Console.WriteLine();
+                                    Console.WriteLine();
+                                    ch = new CursorHelper();
+                                }
+                                ch.WriteLine(string.Format("load Addr: {0}; speed {1} row/s", bulkCnt.ToString("### ### ###"), (bulkCnt / (DateTime.Now - cur_date).TotalSeconds).ToString("### ###")));
+                            }
                         }
                     }
                 }

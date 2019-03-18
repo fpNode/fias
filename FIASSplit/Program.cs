@@ -55,7 +55,6 @@ namespace FIASSplit
         }
     }
 
-
     class Program
     {
         public static DirectoryInfo dataDir = null;
@@ -71,10 +70,13 @@ namespace FIASSplit
             if (!dataDir.Exists)
                 dataDir.Create();
 
-            //Update(new FileInfo(@"Z:\Program Files\FIASFiles\fias_delta_xml_434.rar"));
+            //AddrTable.CreateIndex();
+            //HouseTable.CreateIndex();
+            //RoomTable.CreateIndex(); 
 
-            Update();
-            
+            Update(new FileInfo(@"Z:\Program Files\FIASFiles\fias_delta_xml_20190311.rar"));
+
+            //Update();
 
             //var info = DownloadLastDelta();
 
@@ -149,8 +151,8 @@ namespace FIASSplit
         static void Update(FileInfo file)
         {
             AddrTable.Upload(file);
-            //HouseTable.Upload(file);
-            //RoomTable.Upload(file);
+            HouseTable.Upload(file);
+            RoomTable.Upload(file);
         }
 
         static void BackupDB()
